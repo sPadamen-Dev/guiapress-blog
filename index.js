@@ -5,6 +5,9 @@ const connection = require("./databases/database")
 const categoriesController = require("./categories/categoriesController");
 const articlesController = require("./articles/arcticlesController"); 
 
+const Article = require("./articles/Aticles");
+const Category = require("./categories/Category")
+
 //View engine
 app.set('view engine', 'ejs');
 
