@@ -1,7 +1,32 @@
 <%- include('partials/header.ejs') %>
+<%- include('partials/homenavbar.ejs') %>
 <body>
 
-    <h1>Olá mundo</h1>
+    <div class="container">
+        <hr />
+        <div class="jumbotron">
+            <h1 class="display-4">Bem vindo!</h1>
+            <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+            <hr class="my-4">
+            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+            <p class="lead">
+              <a class="btn btn-primary btn-lg" href="#" role="button">Ler mais</a>
+            </p>
+          </div>
+        <hr />
+
+        <% articles.forEach(article => { %>
+            <div class="card">
+                <div class="card-header">
+                    <h2><%= article.title %></h2>
+                </div>
+                <div class="card-bady p-2">
+                    <a href="/<%=article.slug%>" class="btn  btn-success">Ler artigo</a>
+                </div>
+            </div>
+            <br />
+        <% }) %>
+    </div>
 
 </body>
 <%- include('partials/footer.ejs') %>
