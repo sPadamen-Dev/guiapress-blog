@@ -32,7 +32,55 @@ app.use("/", categoriesController);
 app.use("/", articlesController);
 
 app.get("/",(req, res)=>{
-    res.render("index");
+    Article.findAll({
+        order: [
+            ['id', 'DESC']
+        ]
+    })
+        .then(articles =>{
+            Category.findAll()
+            .then(categories =>{
+                res.render("index", {articles, categories})
+            })
+        })
+});
+
+// ler artigos
+app.get("/:slug", (req, res) => {
+    let {slug} = req.params;
+    Article.findOne({where:{slug}})
+        .then((article =>{
+            if(article != undefined){
+                Category.findAll()
+                .then(categories =>{
+                    res.render("article", {article, categories})
+                })
+            }else{
+                res.redirect("/")
+            }
+        })).catch(err =>{
+            console.log(err)
+            res.redirect("/")
+        })
+    
+});
+
+// pesquisa categoria pelo slug e lista todos
+// os artigos que fazem parte dessa categoria.
+app.get("/category/:slug", (req, res)=>{
+    let {slug} = req.params;
+    Category.findOne({where:{slug}, include: [{model: Article}]})
+        .then(category =>{
+            if(category != undefined){
+                Category.findAll().then(categories => {
+                    res.render("index", {articles: category.articles, categories: categories}) //Passando para as views navbar e index os artigos e categorias.
+                })
+            }else{
+                res.redirect("/")
+            }
+        }).catch(err =>{
+            res.redirect("/")
+        })
 })
 
 app.listen(8080, ()=>{
