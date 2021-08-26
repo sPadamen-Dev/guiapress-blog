@@ -87,7 +87,43 @@ router.post("/articles/update", (req, res)=>{
     });
 });
 
+// paginação
+router.get("/articles/page/:num",(req, res)=>{
+    let page = req.params.num;
+    let offset = 0;
 
+    // logica de paginação
+    if(isNaN(page) || page == 1){
+        offset = 0;
+    }else{
+        offset =( parseInt(page) - 1 )* 4;
+    }
+
+    Articles.findAndCountAll({
+        limit: 4, // limite de arquivos que quero receber na pagina
+        offset: offset, // Intervalos de arquivos que quero receber na pagina
+        order: [["id", "DESC"]]
+    }).then(articles => {
+
+        // Logica do sitema de paginação
+        let next;
+        if(offset + 4 >= articles.count ){
+            next = false;
+        }else{
+            next = true;
+        }
+
+        let result = {
+            page: parseInt(page),
+            next: next,
+            articles : articles
+        }
+
+        Catagory.findAll().then(categories =>{
+            res.render("admin/articles/page", {result, categories})
+        })
+    })
+})
 
 
 
