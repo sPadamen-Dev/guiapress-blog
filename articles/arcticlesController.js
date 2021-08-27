@@ -2,10 +2,11 @@ const router = require("express").Router();
 const Catagory = require("../categories/Category");
 const Articles = require("./Aticles");
 const slugify = require("slugify");
-const Category = require("../categories/Category");
+const adminAuth = require("../middlewares/adminAuth");
+
 
 // rota principal dos artigos
-router.get("/admin/articles", (req, res)=>{
+router.get("/admin/articles",adminAuth , (req, res)=>{
     Articles.findAll({
         include: [{model:Catagory}],
         order: [["id", "DESC"]]
@@ -16,7 +17,7 @@ router.get("/admin/articles", (req, res)=>{
 });
 
 // Passando as categorias para os artigos
-router.get("/admin/articles/new", (req, res)=>{
+router.get("/admin/articles/new",adminAuth, (req, res)=>{
     Catagory.findAll()
         .then(categories =>{[
             res.render("admin/articles/new", {categories})
@@ -24,7 +25,7 @@ router.get("/admin/articles/new", (req, res)=>{
 });
 
 // Salvando artigo
-router.post("/articles/save", (req, res)=>{
+router.post("/articles/save",adminAuth, (req, res)=>{
     let { categoryId, body, title } = req.body;
 
     Articles.create({
@@ -38,7 +39,7 @@ router.post("/articles/save", (req, res)=>{
 });
 
 // Deletando arquivo
-router.post("/articles/delete", (req,res)=>{
+router.post("/articles/delete", adminAuth, (req,res)=>{
     let id = req.body.id;
     if(id != undefined){
         if(!isNaN(id)){
@@ -58,7 +59,7 @@ router.post("/articles/delete", (req,res)=>{
 });
 
 // listando valores antigos na viws
-router.get("/admin/articles/edit/:id", (req, res)=>{
+router.get("/admin/articles/edit/:id",adminAuth,  (req, res)=>{
     let id = req.params.id;
     Articles.findByPk(id)
     .then((article)=>{
@@ -75,7 +76,7 @@ router.get("/admin/articles/edit/:id", (req, res)=>{
     })
 });
 
-router.post("/articles/update", (req, res)=>{
+router.post("/articles/update",adminAuth,  (req, res)=>{
     let {id, title, body, category} = req.body;
     
     Articles.update({title, body, categoryId:category, slug: slugify(title)},{
