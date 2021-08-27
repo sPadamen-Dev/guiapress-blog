@@ -2,10 +2,11 @@ const router = require("express").Router();
 const Catagory = require("../categories/Category");
 const Articles = require("./Aticles");
 const slugify = require("slugify");
-const Category = require("../categories/Category");
+const adminAuth = require("../middlewares/adminAuth");
+
 
 // rota principal dos artigos
-router.get("/admin/articles", (req, res)=>{
+router.get("/admin/articles",adminAuth , (req, res)=>{
     Articles.findAll({
         include: [{model:Catagory}],
         order: [["id", "DESC"]]
@@ -16,7 +17,7 @@ router.get("/admin/articles", (req, res)=>{
 });
 
 // Passando as categorias para os artigos
-router.get("/admin/articles/new", (req, res)=>{
+router.get("/admin/articles/new",adminAuth, (req, res)=>{
     Catagory.findAll()
         .then(categories =>{[
             res.render("admin/articles/new", {categories})
@@ -24,7 +25,7 @@ router.get("/admin/articles/new", (req, res)=>{
 });
 
 // Salvando artigo
-router.post("/articles/save", (req, res)=>{
+router.post("/articles/save",adminAuth, (req, res)=>{
     let { categoryId, body, title } = req.body;
 
     Articles.create({
@@ -38,7 +39,7 @@ router.post("/articles/save", (req, res)=>{
 });
 
 // Deletando arquivo
-router.post("/articles/delete", (req,res)=>{
+router.post("/articles/delete", adminAuth, (req,res)=>{
     let id = req.body.id;
     if(id != undefined){
         if(!isNaN(id)){
@@ -58,7 +59,7 @@ router.post("/articles/delete", (req,res)=>{
 });
 
 // listando valores antigos na viws
-router.get("/admin/articles/edit/:id", (req, res)=>{
+router.get("/admin/articles/edit/:id",adminAuth,  (req, res)=>{
     let id = req.params.id;
     Articles.findByPk(id)
     .then((article)=>{
@@ -75,7 +76,7 @@ router.get("/admin/articles/edit/:id", (req, res)=>{
     })
 });
 
-router.post("/articles/update", (req, res)=>{
+router.post("/articles/update",adminAuth,  (req, res)=>{
     let {id, title, body, category} = req.body;
     
     Articles.update({title, body, categoryId:category, slug: slugify(title)},{
@@ -87,7 +88,43 @@ router.post("/articles/update", (req, res)=>{
     });
 });
 
+// paginação
+router.get("/articles/page/:num",(req, res)=>{
+    let page = req.params.num;
+    let offset = 0;
 
+    // logica de paginação
+    if(isNaN(page) || page == 1){
+        offset = 0;
+    }else{
+        offset =( parseInt(page) - 1 )* 4;
+    }
+
+    Articles.findAndCountAll({
+        limit: 4, // limite de arquivos que quero receber na pagina
+        offset: offset, // Intervalos de arquivos que quero receber na pagina
+        order: [["id", "DESC"]]
+    }).then(articles => {
+
+        // Logica do sitema de paginação
+        let next;
+        if(offset + 4 >= articles.count ){
+            next = false;
+        }else{
+            next = true;
+        }
+
+        let result = {
+            page: parseInt(page),
+            next: next,
+            articles : articles
+        }
+
+        Catagory.findAll().then(categories =>{
+            res.render("admin/articles/page", {result, categories})
+        })
+    })
+})
 
 
 
